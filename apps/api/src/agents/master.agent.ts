@@ -24,6 +24,9 @@ export async function processMessage({
       return await documentationAgent(message);
 
     case "UNDERWRITING":
+      if (!loanId) {
+        return "I need to know which loan you are referring to. Please provide Loan ID.";
+      }
       return await underwritingAgent(message,loanId);
 
     default:
