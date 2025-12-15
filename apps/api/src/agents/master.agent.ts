@@ -18,7 +18,7 @@ export async function processMessage({
   const intent=await checkIntent(message);
   switch (intent) {
     case "SALES":
-      return await salesAgent(message);
+      return await salesAgent(message,loanId);
 
     case "DOCUMENTATION":
       return await documentationAgent(message);
