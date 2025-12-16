@@ -1,8 +1,10 @@
-import { ChatGoogle } from "@langchain/google-gauth";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
-const model = new ChatGoogle({
-  model: "gemma-3-27b-it",
+const model = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!, // from AI Studio
+  model: "gemini-1.5-flash",
   temperature: 0.2,
+  maxRetries: 0, 
 });
 
 export async function documentationAgent(message: string): Promise<string> {
@@ -24,6 +26,11 @@ Your responsibilities:
 User message: ${message}
 `;
 
+try{
   const res = await model.invoke(prompt);
   return res.content as string;
+}catch{
+  return "Document service is temporarily unavailable.";
+}
+
 }

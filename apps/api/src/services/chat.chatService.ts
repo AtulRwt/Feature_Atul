@@ -49,7 +49,7 @@ export const chatService ={
         await this.saveUserMessage(session_token,message);
         const chat = await prisma.chat.findUnique({
           where: { session_token },
-          include: { loan: true },
+          include: { loan: true,user:true },
         });
         if (!chat) {
           throw new Error("Chat session not found");
@@ -59,7 +59,8 @@ export const chatService ={
         //master agent not created yet that is why showing error
         const aiReply = await processMessagebyagent({
             message,
-            loanId
+            loanId,
+            userId:chat?.user?.id
           });
           //save that reply
           await this.saveAgentMessage(session_token,aiReply);

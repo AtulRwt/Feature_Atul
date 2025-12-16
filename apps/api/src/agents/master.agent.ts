@@ -1,31 +1,49 @@
-import { ChatGoogle } from "@langchain/google-gauth";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { MasterAgentInput, AgentIntent } from "./types";
 import { salesAgent } from "./sale.agent";
 import { documentationAgent } from "./documnetation.agent";
 import { underwritingAgent } from "./underwriting.agent";
+import  { detectIntent }from "./intent"
 
 import { verifyPAN, verifyAdhaar ,verifySalarySlip,verifyBankStatement} from "../services/verification.service";
 import { getDocumentFromDB } from "../services/verification.service";
 import { documentService } from "../services/document.documentService";
-const model = new ChatGoogle({
-  model: "gemma-3-27b-it",
+import { createLoan ,getLoanStatus } from "../services/loan.service";
+const model = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!, // from AI Studio
+  model: "gemini-1.5-flash",
   temperature: 0.2,
-});
+  maxRetries: 0, 
 
+});
 export async function processMessagebyagent({
   message,
   loanId,
+  userId
 }: MasterAgentInput): Promise<string> {
 
-  const intent = await checkIntent(message);
+
+  if (!userId) {
+    return "User session not initialized.";
+  }
+  const intent =  detectIntent(message);
 
   //sales
   if (intent === "SALES") {
-    if (!loanId) {
-      return "Error: Loan ID is required for sales operations.";
-    }
-    const reply = await salesAgent(message, loanId);
-    return reply;
+  let activeLoan = await getLoanStatus(userId);
+  if (!activeLoan.hasLoan) {
+    const loan = await createLoan({
+      userId,
+    });
+
+    return "Sure! How much loan amount do you need?";
+  }
+  //if does not exists
+  if (!activeLoan.loanId) {
+    return "Loan not created yet.";
+  }
+  return salesAgent(message, activeLoan.loanId);
+  //   return reply;
   }
   //documention
   if (intent === "DOCUMENTATION") {
@@ -92,39 +110,39 @@ async function safeDocCheck(loanId: number, type: string) {
   }
 }
 
-//intent
-async function checkIntent(message: string): Promise<AgentIntent> {
-  const res = await model.invoke(`
-    Classify the user message into exactly ONE:
-    SALES, DOCUMENTATION, UNDERWRITING, UNKNOWN
+//intent : Exploding with enormous  requests hitting .
+// async function checkIntent(message: string): Promise<AgentIntent> {
+//   const res = await model.invoke(`
+//     Classify the user message into exactly ONE:
+//     SALES, DOCUMENTATION, UNDERWRITING, UNKNOWN
 
-    Respond ONLY with the category.
+//     Respond ONLY with the category.
 
-    Message: ${message}
-  `);
+//     Message: ${message}
+//   `);
 
-  const raw = getTextContent(res.content);
-  const intent = raw.trim().toUpperCase();
+//   const raw = getTextContent(res.content);
+//   const intent = raw.trim().toUpperCase();
 
-  if (intent === "SALES" || intent === "DOCUMENTATION" || intent === "UNDERWRITING") {
-    return intent as AgentIntent;
-  }
+//   if (intent === "SALES" || intent === "DOCUMENTATION" || intent === "UNDERWRITING") {
+//     return intent as AgentIntent;
+//   }
 
-  return "UNKNOWN";
-}
-// to trim: if not string to handle array
-function getTextContent(content: any): string {
-  if (typeof content === "string") return content;
+//   return "UNKNOWN";
+// }
+// // to trim: if not string to handle array
+// function getTextContent(content: any): string {
+//   if (typeof content === "string") return content;
 
-  if (Array.isArray(content)) {
-    return content
-      .map(block => {
-        if (typeof block === "string") return block;
-        if ("text" in block) return block.text;
-        return "";
-      })
-      .join("");
-  }
+//   if (Array.isArray(content)) {
+//     return content
+//       .map(block => {
+//         if (typeof block === "string") return block;
+//         if ("text" in block) return block.text;
+//         return "";
+//       })
+//       .join("");
+//   }
 
-  return "";
-}
+//   return "";
+// }

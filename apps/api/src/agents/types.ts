@@ -8,4 +8,6 @@ export interface MasterAgentInput {
   // sessionId: number;
   message: string;
   loanId?: number
+  userId?: number;
+
 }

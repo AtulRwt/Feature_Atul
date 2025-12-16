@@ -13,23 +13,43 @@ export const LoanStatus = {
 export type LoanStatusType =
   (typeof LoanStatus)[keyof typeof LoanStatus];
 
+// export async function createLoan(input: {
+//   userId: number;
+//   chatId?: number;
+//   type: string;
+//   amount: number;
+//   tenureMonths: number;
+//   monthlyincome:number;
+// }) {
+//   return prisma.loan.create({
+//     data: {
+//       userId: input.userId,
+//       chatId: input.chatId,
+//       type: input.type,
+//       amount: input.amount,
+//       tenure_months: input.tenureMonths,
+//       status: LoanStatus.INITIATED,
+//       monthlyincome:input.monthlyincome
+//     },
+//   });
+// }
 export async function createLoan(input: {
   userId: number;
   chatId?: number;
-  type: string;
-  amount: number;
-  tenureMonths: number;
-  monthlyincome:number;
+  type?: string;
+  amount?: number;
+  tenureMonths?: number;
+  monthlyincome?: number;
 }) {
   return prisma.loan.create({
     data: {
       userId: input.userId,
       chatId: input.chatId,
-      type: input.type,
-      amount: input.amount,
-      tenure_months: input.tenureMonths,
+      type: input.type ?? "PERSONAL_LOAN",
       status: LoanStatus.INITIATED,
-      monthlyincome:input.monthlyincome
+      amount: null,
+      tenure_months: null,
+      monthlyincome: null,
     },
   });
 }

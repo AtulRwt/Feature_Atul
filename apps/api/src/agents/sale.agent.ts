@@ -1,9 +1,12 @@
-import { ChatGoogle } from "@langchain/google-gauth";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { getLoanWithDetails, updateLoanFields } from "../services/loan.service";
 
-const model = new ChatGoogle({
-  model: "gemma-3-27b-it",
+const model = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!, // from AI Studio
+  model: "gemini-1.5-flash",
   temperature: 0.2,
+  maxRetries: 0, 
+
 });
 
 export async function salesAgent(message: string, loanId: number): Promise<string> {
@@ -36,12 +39,15 @@ User: ${message}
   const updates: any = {};
 
   // loan-specific fields
-  const income = message.match(/\b\d{5,7}\b/)?.[0];
-  if (income) updates.monthly_income = Number(income);
+  if (message.toLowerCase().includes("income")) {
+    const income = message.match(/\b\d{4,7}\b/)?.[0];
+    if (income) updates.monthly_income = Number(income);
+  }
 
-  const amount = message.match(/\b\d{4,7}\b/)?.[0];
-  if (amount) updates.amount = Number(amount);
-
+  if (message.toLowerCase().includes("loan")) {
+    const amount = message.match(/\b\d{4,8}\b/)?.[0];
+    if (amount) updates.amount = Number(amount);
+  }
   const tenure = message.match(/(\d+)\s*(months|month)/i)?.[1];
   if (tenure) updates.tenure_months = Number(tenure);
 

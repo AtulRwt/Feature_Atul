@@ -75,9 +75,9 @@ model Loan {
   id                 Int       @id @default(autoincrement())
   status             String
   type               String
-  amount             Int
-  tenure_months      Int
-  monthlyincome      Int //added
+  amount             Int?
+  tenure_months      Int?
+  monthlyincome      Int? //added
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
   userId             Int

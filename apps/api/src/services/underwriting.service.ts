@@ -1,5 +1,7 @@
-import prisma from '../prisma_client/client';
-import { Prisma } from '../prisma_client/client';
+import {prisma} from "../prisma_client/client";
+import type { Prisma } from "@prisma/client";
+
+
 
 /**
  * Underwriting core service for AI-based unsecured personal loan system.
@@ -217,6 +219,8 @@ export async function processLoanUnderwriting(loanId: number) {
     // B. Proposed EMI
     // R = 14% p.a. / 12 months
     const monthlyRate = DEFAULT_INTEREST_RATE_PA / 12;
+    if(!loan.amount)return "Loan not created yet.";
+    if(!loan.tenure_months)return "Loan not created yet.";
     const proposedEMI = calculateEMI(loan.amount, monthlyRate, loan.tenure_months);
 
     // C. PAN & Fraud

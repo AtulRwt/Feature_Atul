@@ -11,9 +11,7 @@ export async function underwritingAgent(
   if (!result.approved) {
     return `
  Your loan could not be approved.
-
 Reason: ${result.rejectionReason}
-
 You may try a lower amount or provide additional documents.
     `;
   }
