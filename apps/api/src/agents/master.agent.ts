@@ -22,7 +22,7 @@ export async function processMessagebyagent({
   const loan = await getLoanWithDetails(loanId);
   if (!loan) return "Loan not found.";
 
- 
+ //testing
   if (loan.status === "INITIATED") {
     console.log("Sales agent started");
 
